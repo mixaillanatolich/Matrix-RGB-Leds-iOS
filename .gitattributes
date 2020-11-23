@@ -1,0 +1,8 @@
+*.ino linguist-detectable=false
+*.html linguist-detectable=false
+*.pdf linguist-detectable=false
+*.png linguist-detectable=false
+*.jpg linguist-detectable=false
+*.h linguist-detectable=false
+*.c linguist-detectable=false
+*.cpp linguist-detectable=false

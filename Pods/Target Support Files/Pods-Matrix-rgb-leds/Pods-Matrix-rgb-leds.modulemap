@@ -1,0 +1,6 @@
+framework module Pods_Matrix_rgb_leds {
+  umbrella header "Pods-Matrix-rgb-leds-umbrella.h"
+
+  export *
+  module * { export * }
+}
