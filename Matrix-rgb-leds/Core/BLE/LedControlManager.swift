@@ -10,18 +10,6 @@ import Foundation
 
 let LEDController = LedControlManager.sharedInstance
 
-enum LedSolidColors: UInt32 {
-    case black = 0x20
-    case red = 0x21
-    case orange = 0x22
-    case yellow = 0x23
-    case green = 0x24
-    case skyblue = 0x25
-    case blue = 0x26
-    case violet = 0x27
-    case white = 0x28
-}
-
 class LedControlManager: NSObject {
     
     typealias SettigsCallbackClosure = (_ settings: LightsStateResponse) -> Void
@@ -65,11 +53,19 @@ class LedControlManager: NSObject {
         }
     }
     
-    /*
-    func setMode(_ id: Int, callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        let commandId:UInt8 = 0x03
+    func setMode(_ id: Int, speed: UInt8 = 50, callback: @escaping (_ isSuccessful: Bool) -> Void) {
+        let commandId:UInt8 = 0x08
         let modeId:UInt8 = UInt8(id)
-        makeCommandAndSend(data: Data([commandId, modeId]),
+//        let theSpeed:UInt8
+//        if speed > 254 {
+//            theSpeed = UInt8(254)
+//        } else if speed < 30 {
+//            theSpeed = UInt8(30)
+//        } else {
+//            theSpeed = UInt8(speed)
+//        }
+         
+        makeCommandAndSend(data: Data([commandId, 0x00, modeId, speed]),
                            isWaitResponse: true, isWriteWithResponse: true,
                            command: SetModeCommand.self) { (status, response) in
             
@@ -88,108 +84,125 @@ class LedControlManager: NSObject {
         }
     }
     
-    //MARK: - brightness
-    func brightnessPlusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x01, callback: callback)
+    func playMode(pause: Bool, callback: @escaping (_ isSuccessful: Bool) -> Void) {
+        let commandId:UInt8 = 0x10
+        let command:UInt8 = pause ? 0x01 : 0x00
+         
+        makeCommandAndSend(data: Data([commandId, command]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: LedStateCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                callback(status)
+                guard status, let response = response, response is LightsStateResponse else { return }
+                DispatchQueue.main.async {
+                    self.settingsallback?(response as! LightsStateResponse)
+                }
+            }
+        }
     }
     
-    func brightnessMinusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x02, callback: callback)
-    }
-    
-    //MARK: -
-    func resetCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x03, callback: callback)
-    }
-    
-    func randomCmd(random: Bool, callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(random ? 0x05 : 0x04, callback: callback)
-    }
-    
-    func stopCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x20, callback: callback)
-    }
-    
-    //MARK: - led count
-    func ledPlusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x08, callback: callback)
-    }
-    
-    func ledMinusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x09, callback: callback)
-    }
-    
-    //MARK: -
-    func changeEffectDirectionCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0a, callback: callback)
-    }
-    
-    func speedMinusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0b, callback: callback)
-    }
-    
-    func speedPlusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0c, callback: callback)
-    }
-    
-    //MARK: -
-    func glitterCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0d, callback: callback)
-    }
-    
-    func backgroudCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0e, callback: callback)
-    }
-    
-    func candleCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x0f, callback: callback)
-    }
-    
-    //MARK: -
     func prevModeCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x10, callback: callback)
+        let commandId:UInt8 = 0x10
+        let command:UInt8 = 0x02
+         
+        makeCommandAndSend(data: Data([commandId, command]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: LedStateCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                callback(status)
+                guard status, let response = response, response is LightsStateResponse else { return }
+                DispatchQueue.main.async {
+                    self.settingsallback?(response as! LightsStateResponse)
+                }
+            }
+        }
     }
     
     func nextModeCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x11, callback: callback)
+        let commandId:UInt8 = 0x10
+        let command:UInt8 = 0x03
+         
+        makeCommandAndSend(data: Data([commandId, command]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: LedStateCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                callback(status)
+                guard status, let response = response, response is LightsStateResponse else { return }
+                DispatchQueue.main.async {
+                    self.settingsallback?(response as! LightsStateResponse)
+                }
+            }
+        }
     }
     
-    //MARK: -
-    func delayMinusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x13, callback: callback)
+    func effectPlayTime(minutes: UInt8, callback: @escaping (_ isSuccessful: Bool) -> Void) {
+        let commandId:UInt8 = 0x11
+         
+        makeCommandAndSend(data: Data([commandId, minutes]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: SetModeCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                guard status, let response = response else {
+                    callback(false)
+                    return
+                }
+                
+                if response is CommonStatusResponse {
+                    callback((response as! CommonStatusResponse).status)
+                } else {
+                    callback(false)
+                }
+            }
+        }
     }
     
-    func delayPlusCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x14, callback: callback)
+    func effectSpeed(_ speed: UInt8, callback: @escaping (_ isSuccessful: Bool) -> Void) {
+        let commandId:UInt8 = 0x0f
+         
+        makeCommandAndSend(data: Data([commandId, speed]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: SetModeCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                guard status, let response = response else {
+                    callback(false)
+                    return
+                }
+                
+                if response is CommonStatusResponse {
+                    callback((response as! CommonStatusResponse).status)
+                } else {
+                    callback(false)
+                }
+            }
+        }
     }
     
-    //MARK: - Palette
-    func paletteStopCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x15, callback: callback)
+    func matrixBrightness(_ brightness: UInt8, callback: @escaping (_ isSuccessful: Bool) -> Void) {
+        let commandId:UInt8 = 0x04
+         
+        makeCommandAndSend(data: Data([commandId, brightness]),
+                           isWaitResponse: true, isWriteWithResponse: true,
+                           command: SetModeCommand.self) { (status, response) in
+            
+            DispatchQueue.main.async {
+                guard status, let response = response else {
+                    callback(false)
+                    return
+                }
+                
+                if response is CommonStatusResponse {
+                    callback((response as! CommonStatusResponse).status)
+                } else {
+                    callback(false)
+                }
+            }
+        }
     }
-    
-    func palettePreviousCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x16, callback: callback)
-    }
-    
-    func paletteNextCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x17, callback: callback)
-    }
-    
-    func paletteAutoCmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(0x18, callback: callback)
-    }
-    
-    //MARK: - colors
-    func setColorCmd(_ color: LedSolidColors, callback: @escaping (_ isSuccessful: Bool) -> Void) {
-        sendCommand(color.rawValue, callback: callback)
-    }
-    
-//    //MARK: -
-//    func Cmd(callback: @escaping (_ isSuccessful: Bool) -> Void) {
-//        sendCommand(0x, callback: callback)
-//    }
-    */
     
     fileprivate func sendCommand(_ command: UInt32, callback: @escaping (_ isSuccessful: Bool) -> Void) {
         let commandId:UInt8 = 0x02
